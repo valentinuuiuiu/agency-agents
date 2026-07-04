@@ -1,0 +1,54 @@
+name: Sync & Deploy Agents
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'academic/**'
+      - 'design/**'
+      - 'engineering/**'
+      - 'finance/**'
+      - 'game-development/**'
+      - 'gis/**'
+      - 'marketing/**'
+      - 'paid-media/**'
+      - 'product/**'
+      - 'project-management/**'
+      - 'sales/**'
+      - 'security/**'
+      - 'spatial-computing/**'
+      - 'specialized/**'
+      - 'support/**'
+      - 'testing/**'
+      - 'scripts/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Convert Agents
+        run: ./scripts/convert.sh --tool qwen --parallel
+
+      - name: Generate Manifest
+        run: ./scripts/generate-manifest.sh
+
+      - name: Deploy to Agents Distribution (Simulated Vercel)
+        run: |
+          git config --global user.name "The Agency Bot"
+          git config --global user.email "bot@agency.ai"
+
+          # Create or update a distribution directory
+          mkdir -p dist/qwen
+          cp -r integrations/qwen/agents/* dist/qwen/
+          cp agents-manifest.json dist/
+
+          echo "Deployment artifacts prepared in dist/"
